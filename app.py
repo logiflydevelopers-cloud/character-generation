@@ -1,0 +1,234 @@
+import streamlit as st
+import requests
+import zipfile
+import io
+
+from services.fal_client import charcter_generation, edit_character, generate_video
+
+st.set_page_config(page_title="AI Character Studio", layout="wide")
+
+st.title("AI Character Generator")
+
+# ==============================
+# CHARACTER SETTINGS
+# ==============================
+
+st.subheader("Character Settings")
+
+col1, col2 = st.columns(2)
+
+with col1:
+
+    style = st.selectbox(
+        "Style",
+        ["Realistic", "Anime"]
+    )
+
+    ethnicity = st.selectbox(
+        "Ethnicity",
+        ["Caucasian", "Asian", "Black / Afro", "Latina", "Arab", "American", "French", "Spanish", "Italian", "Turkish"]
+    )
+
+    age = st.slider("Age", 18, 55, 25)
+
+    hair_style = st.selectbox(
+        "Hair Style",
+        ["Straight", "Bangs", "Curly", "Bun", "Short", "Ponytail"]
+    )
+
+    hair_color = st.selectbox(
+        "Hair Color",
+        ["Brunette", "Blonde", "Black", "Redhead", "Pink", "Purple", "Blue", "Silver"]
+    )
+
+with col2:
+
+    eye_color = st.selectbox(
+        "Eye Color",
+        ["Brown", "Blue", "Green"]
+    )
+
+    body_type = st.selectbox(
+        "Body Type",
+        ["Skinny", "Athletic", "Average", "Curvy", "BBW"]
+    )
+
+    b_size = st.selectbox(
+        "Bust Size",
+        ["Small", "Medium", "Large", "Extra Large"]
+    )
+
+    scene = st.text_area("Scene Description")
+    pose = st.text_area("Pose Description")
+    clothes = st.text_area("Clothes Description")
+
+# ==============================
+# PERSONALITY
+# ==============================
+
+st.subheader("Personality")
+
+personality = st.multiselect(
+    "Select Personality Traits",
+    [
+        "Nympho","Lover","Submissive","Dominant","Temptress",
+        "Innocent","Caregiver","Experimenter","Mean",
+        "Confident","Shy","Queen", "BDSM"
+    ]
+)
+
+# ==============================
+# RELATIONSHIP
+# ==============================
+
+relationship = st.selectbox(
+    "Relationship",
+    [
+        "Stranger","Girlfriend","Sex Friend","School Mate",
+        "Work Colleague","Wife","Mistress","Friend",
+        "Step Sister","Step Mom"
+    ]
+)
+
+# ==============================
+# OCCUPATION
+# ==============================
+
+occupation = st.selectbox(
+    "Occupation",
+    [
+        "Student","Dancer","Model","Stripper","Maid",
+        "Cam Girl","Boss / CEO","Babysitter / Au Pair",
+        "Pornstar","Streamer","Bartender","Tech Engineer",
+        "Lifeguard","Cashier","Massage Therapist",
+        "Teacher","Nurse","Secretary","Yoga Instructor",
+        "Fitness Coach","Black hat hacker", "Club Performer", "Biker", 
+        "Police Officer", "Militry", "Air Hostess", "Pilot",
+        "Hunter"
+    ]
+)
+
+# ==============================
+# EDIT + VIDEO PROMPTS
+# ==============================
+
+st.subheader("Edit + Video Prompts")
+
+edit_prompt_1 = st.text_area("Edit Prompt 1")
+edit_prompt_2 = st.text_area("Edit Prompt 2")
+
+video_prompt_1 = st.text_area("Video Prompt 1")
+video_prompt_2 = st.text_area("Video Prompt 2")
+
+# ==============================
+# PROMPT CREATION
+# ==============================
+
+personality_text = ", ".join(personality)
+
+generated_prompt = f"""
+{style} beautiful {ethnicity} woman,
+age {age},
+{hair_color} {hair_style} hair,
+{eye_color} eyes,
+{body_type} body type,
+bust size {b_size},
+personality: {personality_text},
+relationship: {relationship},
+occupation: {occupation},
+scene: {scene},
+pose: {pose},
+clothes: {clothes},
+highly detailed,
+8k realistic photo
+"""
+
+character_prompt = st.text_area(
+    "Generated Prompt (Editable)",
+    value=generated_prompt,
+    height=200
+)
+
+# ==============================
+# GENERATE
+# ==============================
+
+if st.button("Generate Character"):
+
+    # ORIGINAL IMAGE
+    with st.spinner("Generating Base Image..."):
+        image_url = charcter_generation(character_prompt)
+
+    # EDIT 1
+    with st.spinner("Generating Edit Image 1..."):
+        edited_url_1 = edit_character([image_url], edit_prompt_1)
+
+    # EDIT 2
+    with st.spinner("Generating Edit Image 2..."):
+        edited_url_2 = edit_character([edited_url_1], edit_prompt_2)
+
+    # VIDEO 1 (from original)
+    with st.spinner("Generating Video 1..."):
+        video_url_1 = generate_video(image_url, video_prompt_1)
+
+    # VIDEO 2 (from edited image 1)
+    with st.spinner("Generating Video 2..."):
+        video_url_2 = generate_video(edited_url_1, video_prompt_2)
+
+    # ==============================
+    # DISPLAY RESULTS
+    # ==============================
+
+    st.divider()
+    st.subheader("Results")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.image(image_url, caption="Original Image")
+
+    with col2:
+        st.image(edited_url_1, caption="Edited Image 1")
+
+    with col3:
+        st.image(edited_url_2, caption="Edited Image 2")
+
+    st.divider()
+
+    col4, col5 = st.columns(2)
+
+    with col4:
+        st.video(video_url_1)
+
+    with col5:
+        st.video(video_url_2)
+
+    # ==============================
+    # FETCH FILES
+    # ==============================
+
+    image_bytes = requests.get(image_url).content
+    edit1_bytes = requests.get(edited_url_1).content
+    edit2_bytes = requests.get(edited_url_2).content
+    video1_bytes = requests.get(video_url_1).content
+    video2_bytes = requests.get(video_url_2).content
+
+    # ==============================
+    # ZIP DOWNLOAD
+    # ==============================
+
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("original.webp", image_bytes)
+        zf.writestr("edit_1.webp", edit1_bytes)
+        zf.writestr("edit_2.webp", edit2_bytes)
+        zf.writestr("video_1.mp4", video1_bytes)
+        zf.writestr("video_2.mp4", video2_bytes)
+
+    st.download_button(
+        "Download All Results (ZIP)",
+        zip_buffer.getvalue(),
+        "character_package.zip",
+        "application/zip"
+    )
