@@ -26,7 +26,7 @@ with col1:
 
     ethnicity = st.selectbox(
         "Ethnicity",
-        ["Caucasian", "Asian", "Black / Afro", "Latina", "Arab", "American", "French", "Spanish", "Italian", "Turkish"]
+        ["Caucasian", "Asian", "Black / Afro", "Latina", "Arab", "American", "French", "Spanish", "Italian", "Turkish", "Indian"]
     )
 
     age = st.slider("Age", 18, 35, 20)
