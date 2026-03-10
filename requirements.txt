@@ -4,3 +4,4 @@ python-dotenv
 requests
 pillow
 replicate
+pydantic==1.10.13
