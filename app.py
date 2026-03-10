@@ -58,10 +58,6 @@ with col2:
         ["Small", "Medium", "Large", "Extra Large"]
     )
 
-    scene = st.text_area("Scene Description")
-    pose = st.text_area("Pose Description")
-    clothes = st.text_area("Clothes Description")
-
 # ==============================
 # PERSONALITY
 # ==============================
@@ -108,6 +104,18 @@ occupation = st.selectbox(
     ]
 )
 
+kinks = st.selectbox(
+    "Kinks",
+    [
+        "Daddy Dominance","Bondage","Spanking","Collar and Leash",
+        "Punishment","Humiliation","Public Play","Role Play",
+        "Anal Play","Oral Play","Cum Play","Creampie",
+        "Squirting","Dirty Talk","Breeding","Edging",
+        "Obidenece","Control","Inexperienced","Shy Flirting",
+        "Playful Teasing","Cuddling","Slow and Sensual","Hair Pulling"
+    ]
+)
+
 # ==============================
 # EDIT + VIDEO PROMPTS
 # ==============================
@@ -135,12 +143,8 @@ age {age},
 bust size {b_size},
 personality: {personality_text},
 relationship: {relationship},
-occupation: {occupation},
-scene: {scene},
-pose: {pose},
-clothes: {clothes},
-highly detailed,
-8k realistic photo
+occupation: {occupation}
+kinks: {kinks}
 """
 
 character_prompt = st.text_area(
