@@ -2,6 +2,10 @@ import streamlit as st
 import requests
 import zipfile
 import io
+import os
+import replicate
+
+replicate.Client(api_token=os.getenv("REPLICATE_API_TOKEN"))
 
 from services.replicate_client import anime_generation, edit_anime, anime_video
 
