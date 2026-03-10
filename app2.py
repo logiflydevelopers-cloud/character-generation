@@ -23,7 +23,7 @@ col1, col2 = st.columns(2)
 
 with col1:
 
-    style = st.selectbox("Style", ["Realistic", "Anime"])
+    style = st.selectbox("Style", ["Anime"])
 
     ethnicity = st.selectbox(
         "Ethnicity",
